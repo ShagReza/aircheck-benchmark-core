@@ -1,4 +1,4 @@
-"""Command line: `aircheck-bench make-folds ...` and `aircheck-bench score ...` (add --help for the options)."""
+"""Command line: `aircheck-bench make-folds | score | report ...` (add --help for the options)."""
 
 import argparse
 import json
@@ -9,6 +9,7 @@ import pandas as pd
 from . import __version__
 from .folds import METHODS, make_folds
 from .metrics import HIT_KS, THRESHOLD, read_predictions, score_predictions
+from .report import make_report
 
 
 def main(argv=None):
@@ -43,8 +44,24 @@ def main(argv=None):
     p.add_argument("--threshold", type=float, default=THRESHOLD)
     p.add_argument("--hit-ks", type=int, nargs="+", default=list(HIT_KS))
 
+    p = sub.add_parser("report", help="score every run under a results folder and write report.md + summary CSV")
+    p.add_argument("--results", required=True, help="folder searched for run.json files (one model or all models)")
+    p.add_argument("--out", help="report path (default: <results>/report.md); the CSV goes next to it")
+    p.add_argument("--train", help="train file, for the Data section")
+    p.add_argument("--test", help="test file, for the Data section")
+    p.add_argument("--folds", help="folds .npz: check every run's fold predictions and describe the folds")
+    p.add_argument("--title", help="report title (default: the results folder name)")
+    p.add_argument("--smiles-col", default="SMILES")
+    p.add_argument("--label-col", default="LABEL")
+
     args = parser.parse_args(argv)
-    if args.command == "score":
+    if args.command == "report":
+        paths = make_report(args.results, out=args.out, train_path=args.train, test_path=args.test,
+                            folds_npz=args.folds, title=args.title, smiles_col=args.smiles_col,
+                            label_col=args.label_col)
+        for path in paths.values():
+            print(f"Saved {path}")
+    elif args.command == "score":
         table = score_predictions(read_predictions(args.predictions), split_col=args.split_col,
                                   label_col=args.label_col, score_col=args.score_col, hit_ks=args.hit_ks,
                                   threshold=args.threshold, folds_npz=args.folds, row_col=args.row_col)

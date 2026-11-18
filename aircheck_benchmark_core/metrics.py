@@ -89,7 +89,8 @@ def score_predictions(df, split_col="split", label_col="LABEL", score_col="score
         raise ValueError(f"Predictions have no column(s) {missing}; available: {list(df.columns)}")
     if split_col not in df:
         df = df.assign(**{split_col: "test"})
-    if folds_npz is not None:
+    df = df.assign(**{split_col: df[split_col].astype(str)})
+    if folds_npz is not None and df[split_col].str.fullmatch(r"fold\d+").any():
         check_folds(df, folds_npz, split_col, row_col)
 
     rows = []

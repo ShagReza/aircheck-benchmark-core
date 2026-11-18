@@ -7,7 +7,8 @@ the same cross-validation folds and the same metrics.
 |---|---|
 | `folds.py` | fold methods (`random`, `stratified`, `cluster`), `make_folds` (build + save), `load_folds` |
 | `metrics.py` | `compute_metrics` (hit@200/100/50, AUROC, PR AUC, precision, recall, specificity, accuracy), `score_predictions` |
-| `cli.py` | the `aircheck-bench` command: `make-folds`, `score` |
+| `report.py` | `make_report`: one report for any number of runs (methods and models) |
+| `cli.py` | the `aircheck-bench` command: `make-folds`, `score`, `report` |
 
 ## Install
 
@@ -57,6 +58,29 @@ Predictions file (CSV or parquet, one row per molecule):
 Other columns (SMILES, pred, rank, ...) are ignored, so the forks' current `predictions.csv` files can be
 scored as they are. The output has one row per split, plus `cv_mean` and `cv_std` over the folds. With
 `--folds`, it stops with an error unless each fold's predictions are exactly that fold's test rows.
+
+## Report
+
+Each run (one method of one model on one dataset) writes a folder with `predictions.csv` (format above) and a
+`run.json`:
+```json
+{"model": "mammal", "method": "finetune", "name": "MAMMAL fine-tuned",
+ "settings": {"epochs": 10, "lr": 2e-05}, "report_extras": {"selected epoch": 3},
+ "hardware": "Tesla T4", "fork_commit": "abc1234", "core_version": "0.1.0"}
+```
+Only `model` and `method` are required. `report_extras` become extra columns in the CV table.
+
+```bash
+# All methods of one model
+aircheck-bench report --results results/wdr91/mammal/
+# Every model on the dataset, with the Data section and the fold check
+aircheck-bench report --results results/wdr91/ \
+    --train train.parquet --test test.parquet --folds folds/train_cluster_cv_folds.npz
+```
+It finds every `run.json` under `--results`, scores each run's predictions, and writes `report.md` (Data,
+Setup, cross-validation mean ± std, test results for every non-fold split such as `test` and
+`test_ensemble`) and `report_summary.csv` (every split and metric of every run). With `--folds`, every run's
+fold predictions must be exactly that file's fold test rows.
 
 ## Use from Python
 
