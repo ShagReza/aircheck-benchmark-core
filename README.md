@@ -52,7 +52,7 @@ Predictions file (CSV or parquet, one row per molecule):
 |---|---|
 | `split` | `fold0`, `fold1`, ... (CV fold test sets) or `test` (final test set). Optional: missing = all `test` |
 | `LABEL` | 0/1 |
-| `score` | higher = more likely a hit |
+| `score` | higher = more likely a hit. Empty = the model could not score it (e.g. invalid SMILES): ranked last, counted in `n_unscored` |
 | `row` | optional: row in the folds CSV (CV) or the test file. Needed for `--folds` |
 
 Other columns (SMILES, pred, rank, ...) are ignored, so the forks' current `predictions.csv` files can be

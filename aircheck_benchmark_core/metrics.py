@@ -7,7 +7,7 @@ into 14 notebooks in 3 slightly different versions. Add a metric by writing a fu
 Predictions file read by `score_predictions` / `aircheck-bench score` (CSV or parquet, one row per molecule):
   split   fold0, fold1, ... (CV fold test sets) or test (final test set); optional, missing = all "test"
   LABEL   0/1
-  score   higher = more likely a hit
+  score   higher = more likely a hit; empty = the model could not score it (ranked last, counted in n_unscored)
   row     optional: row in the folds CSV (CV) or test file; needed to check the folds with `folds_npz`
 Other columns (SMILES, pred, rank, ...) are ignored.
 """
@@ -96,8 +96,13 @@ def score_predictions(df, split_col="split", label_col="LABEL", score_col="score
     rows = []
     for split in sorted(df[split_col].unique(), key=_split_order):
         g = df[df[split_col] == split]
+        scores = g[score_col].astype(float)
+        # A molecule the model could not score (e.g. invalid SMILES) is ranked last and predicted 0
+        n_unscored = int(scores.isna().sum())
+        if n_unscored:
+            scores = scores.fillna(min(scores.min(), 0.0) - 1.0 if scores.notna().any() else -1.0)
         rows.append({"split": split, "n": len(g), "n_pos": int(g[label_col].astype(int).sum()),
-                     **compute_metrics(g[label_col], g[score_col], hit_ks, threshold)})
+                     "n_unscored": n_unscored, **compute_metrics(g[label_col], scores, hit_ks, threshold)})
     table = pd.DataFrame(rows)
 
     fold_rows = table[table["split"].str.fullmatch(r"fold\d+")].drop(columns="split")
