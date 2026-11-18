@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aircheck-benchmark-core"
+dynamic = ["version"]
+description = "Shared cross-validation folds and metrics for the AIRCHECK model benchmark"
+readme = "README.md"
+requires-python = ">=3.10"
+# No version pins: this package is installed into every model's own environment
+dependencies = ["numpy", "pandas", "pyarrow", "scikit-learn"]
+
+[project.scripts]
+aircheck-bench = "aircheck_benchmark_core.cli:main"
+
+[tool.setuptools]
+packages = ["aircheck_benchmark_core"]
+
+[tool.setuptools.dynamic]
+version = { attr = "aircheck_benchmark_core.__version__" }
