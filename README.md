@@ -8,6 +8,7 @@ the same cross-validation folds and the same metrics.
 | `folds.py` | fold methods (`random`, `stratified`, `cluster`), `make_folds` (build + save), `load_folds` |
 | `metrics.py` | `compute_metrics` (hit@200/100/50, AUROC, PR AUC, precision, recall, specificity, accuracy), `score_predictions` |
 | `report.py` | `make_report`: one report for any number of runs (methods and models) |
+| `lgbm.py` | `train_and_score`: LightGBM on any model's embeddings (needs `lightgbm`) |
 | `cli.py` | the `aircheck-bench` command: `make-folds`, `score`, `report` |
 
 ## Install

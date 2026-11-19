@@ -11,6 +11,10 @@ requires-python = ">=3.10"
 # No version pins: this package is installed into every model's own environment
 dependencies = ["numpy", "pandas", "pyarrow", "scikit-learn"]
 
+# lgbm.py (LightGBM on embeddings) needs lightgbm; nothing else in the package imports it
+[project.optional-dependencies]
+lgbm = ["lightgbm"]
+
 [project.scripts]
 aircheck-bench = "aircheck_benchmark_core.cli:main"
 
